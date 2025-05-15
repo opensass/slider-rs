@@ -95,6 +95,27 @@ fn App() -> Element {
 
 ### Styling & Layout Props
 
+```sh
++---------------------------------------------------------------+
+|                     [Slider Container]                        |  <-- `container_class` & `container_style`
+|                                                               |
+|   +------------------------[Label]------------------------+   |  <-- `label_class` & `label_style`
+|   |                                                       |   |
+|   +-------------------------------------------------------+   |
+|                                                               |
+|   +----------------[Icons & Inputs Wrapper]---------------+   |  <-- layout wrapper
+|   |  [Icon Start]   [Input Thumb 1]   [Input Thumb 2]     |   |  <-- double thumb if enabled
+|   |                                                       |   |
+|   +-------------------------------------------------------+   |
+|                                                               |
+|   +------------------------[Ticks]------------------------+   |  <-- visual tick marks (if enabled)
+|                                                               |
+|   +------------------------[Output]-----------------------+   |  <-- value display (if `show_value`)
+|                                                               |
+|   +------------------------[Steps]------------------------+   |  <-- step indicators (if `show_steps`)
++---------------------------------------------------------------+
+```
+
 | Property          | Type           | Description                                            | Default                                                                                                        |
 | ----------------- | -------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
 | `container_class` | `&'static str` | CSS class for the container wrapping the slider.       | `"slider-container"`                                                                                           |
