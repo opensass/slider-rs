@@ -181,6 +181,8 @@ pub struct InputProps {
     pub custom_thumb_html: Option<Html>,
     #[prop_or(1.0)]
     pub keyboard_step: f64,
+    #[prop_or(false)]
+    pub rtl_fill: bool,
 }
 
 #[function_component(Input)]
@@ -189,8 +191,20 @@ fn slider_input(props: &InputProps) -> Html {
     let fill_color = props.color.to_color_code();
     let gradient = if props.use_gradient {
         if props.orientation.is_vertical() {
+            if props.rtl_fill {
+                format!(
+                    "background: linear-gradient(to top, {} 0%, {} {:.2}%, #ccc {:.2}%, #ccc 100%);",
+                    fill_color, fill_color, value_percent, value_percent
+                )
+            } else {
+                format!(
+                    "background: linear-gradient(to bottom, {} 0%, {} {:.2}%, #ccc {:.2}%, #ccc 100%);",
+                    fill_color, fill_color, value_percent, value_percent
+                )
+            }
+        } else if props.rtl_fill {
             format!(
-                "background: linear-gradient(to bottom, {} 0%, {} {:.2}%, #ccc {:.2}%, #ccc 100%);",
+                "background: linear-gradient(to left, {} 0%, {} {:.2}%, #ccc {:.2}%, #ccc 100%);",
                 fill_color, fill_color, value_percent, value_percent
             )
         } else {
@@ -511,9 +525,10 @@ pub struct Props {
 pub fn slider(props: &Props) -> Html {
     let input_ref1 = use_node_ref();
     let input_ref2 = use_node_ref();
-    let (val1, val2) = props.range.unwrap_or((props.min, props.max));
-    let val1 = use_state(|| props.value.unwrap_or(val1));
-    let val2 = use_state(|| val2);
+    let (initial_val1, initial_val2) = props.range.unwrap_or((props.min, props.max));
+    let val1 = use_state(|| initial_val1);
+    let val2 = use_state(|| initial_val2);
+
     let list_id = format!("slider-list-{}", Uuid::new_v4());
 
     let update_range = {
@@ -529,31 +544,29 @@ pub fn slider(props: &Props) -> Html {
 
     let on_input1 = {
         let val1 = val1.clone();
-        let val2 = val2.clone();
         let update_range = update_range.clone();
         let on_change = props.on_change.clone();
         Callback::from(move |e: InputEvent| {
             if let Some(input) = e.target_dyn_into::<HtmlInputElement>() {
                 if let Ok(v) = input.value().parse::<f64>() {
-                    val1.set(v.min(*val2));
+                    val1.set(v);
                     update_range.emit(());
-                    on_change.emit(*val1);
+                    on_change.emit(v);
                 }
             }
         })
     };
 
     let on_input2 = {
-        let val1 = val1.clone();
         let val2 = val2.clone();
         let update_range = update_range.clone();
         let on_change = props.on_change.clone();
         Callback::from(move |e: InputEvent| {
             if let Some(input) = e.target_dyn_into::<HtmlInputElement>() {
                 if let Ok(v) = input.value().parse::<f64>() {
-                    val2.set(v.max(*val1));
+                    val2.set(v);
                     update_range.emit(());
-                    on_change.emit(*val1);
+                    on_change.emit(v);
                 }
             }
         })
@@ -570,15 +583,15 @@ pub fn slider(props: &Props) -> Html {
     };
 
     let (input_style1, input_style2): (&'static str, &'static str) = if props.double {
-        let stacked_style1 = Box::leak(Box::new(format!(
-            "{}; position: absolute; width: 100%; top: 0; left: 0; z-index: 3;",
+        let flipped_style = Box::leak(Box::new(format!(
+            "{}; transform: rotate(0deg); direction: rtl; z-index: 3; position: relative; flex: 1;",
             props.input_style
         )));
-        let stacked_style2 = Box::leak(Box::new(format!(
-            "{}; position: absolute; width: 100%; top: 0; left: 0; z-index: 2;",
+        let normal_style = Box::leak(Box::new(format!(
+            "{}; z-index: 2; position: relative; flex: 1;",
             props.input_style
         )));
-        (stacked_style1, stacked_style2)
+        (flipped_style, normal_style)
     } else {
         (props.input_style, props.input_style)
     };
@@ -659,11 +672,29 @@ pub fn slider(props: &Props) -> Html {
                                 }
                             }
                             { props.icon_end.clone().unwrap_or_default() }
+                            {if props.show_steps {
+                                html! {
+                                    <>
+                                        <Ticks id={list_id.clone()} min={props.min} max={props.max} step={props.step} />
+                                        <Steps
+                                            min={props.min}
+                                            max={props.max}
+                                            step={props.step}
+                                            steps_style={props.steps_style}
+                                            orientation={props.orientation.clone()}
+                                        />
+                                    </>
+                                }
+                            }
+                            else {
+                                html!{}
+                            }
+                        }
                         </div>
                     }
                 } else if props.double {
                     html! {
-                        <div style="position: relative; width: 100%; flex; align-items: center;">
+                        <div style="position: relative; width: 100%; display: flex; align-items: center;">
                             { props.icon_start.clone().unwrap_or_default() }
                             <Input
                                 input_ref={input_ref1}
@@ -671,6 +702,7 @@ pub fn slider(props: &Props) -> Html {
                                 max={props.max}
                                 step={props.step}
                                 value={*val1}
+                                rtl_fill={true}
                                 orientation={props.orientation.clone()}
                                 disabled={props.disabled}
                                 size={props.size.clone()}

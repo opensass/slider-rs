@@ -294,7 +294,7 @@ fn visible_steps() -> Html {
                     <VisibleSteps />
                 </div>
                 <div class="flex flex-col items-center bg-gray-200 p-4 rounded-lg shadow-md">
-                    <h2 class="text-xl font-bold mb-2">{ "Double Slider" }</h2>
+                    <h2 class="text-xl font-bold mb-2">{ "Double Slider (WIP)" }</h2>
                     <pre
                         class="font-mono text-xs text-white p-4 bg-gray-800 mb-8 rounded-md w-full overflow-x-auto"
                     >
