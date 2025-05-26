@@ -24,7 +24,7 @@ web-sys = { version = "0.3.77", features = [
     "InputEvent",
     "CssStyleDeclaration"
 ]}
-uuid = { version = "1.16.0", features = ["v4", "js"] }
+uuid = { version = "1.17.0", features = ["v4", "js"] }
 
 [features]
 yew = ["dep:yew"]
